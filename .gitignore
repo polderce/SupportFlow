@@ -1,0 +1,40 @@
+# Virtual environment
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Environment variables / secrets
+.env
+*.env
+local_settings.py
+
+# Database
+db.sqlite3
+
+# Logs / temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# IDE
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Media
+media/
