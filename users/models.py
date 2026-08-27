@@ -25,7 +25,7 @@ class UserManager(BaseUserManager): # Клас создания пользова
     return self.create_user(email, password, **exstra_fields)
 
 class Role(models.TextChoices): # Создание класса с полями для выбора роли
-    USER= 'user', 'Пользователь'
+    USER = 'user', 'Пользователь'
     SUPPORT = 'support', 'Саппорт'
     MANAGER = 'manager', 'Менеджер'
     ADMIN = 'admin', 'Администратор'
