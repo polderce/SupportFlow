@@ -32,3 +32,17 @@ class UserChangeForm(BaseUserChangeForm):
 class LoginForm(forms.Form):
   email = forms.EmailField()
   password = forms.CharField(widget=forms.PasswordInput)
+
+class RegisterForm(UserCreationForm):
+  email = forms.EmailField()
+  class Meta:
+    model = User
+    fields = (
+      'email',
+      'first_name',
+      'last_name',
+      'phone_number',
+      'password1',
+      'password2'
+    )
+
