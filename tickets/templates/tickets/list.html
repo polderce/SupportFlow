@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Просмотр тикетов</title>
+</head>
+<body>
+    <h1>Тикеты</h1>
+    <ul>
+        {% for ticket in tickets %}
+        <li>{{ ticket.title }} - {{ ticket.description }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

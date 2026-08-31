@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 from .forms import TicketCreationForm
+from .models import Ticket
 
 # Create your views here.
 @login_required
-def ticket_view(request):
+def ticket_create_view(request):
   if request.method == 'POST':
     form = TicketCreationForm(request.POST)
     if form.is_valid():
@@ -12,11 +14,22 @@ def ticket_view(request):
       ticket.user = request.user
       ticket.save()
 
-      return redirect('ticket')
+      return redirect('ticket-list')
 
   else:
     form = TicketCreationForm()
 
-  return render(request, 'ticket.html', {'form': form})
+  return render(request, 'tickets/create.html', {'form': form})
 
-
+@login_required
+def ticket_list_view(request):
+  if request.user.has_perm('tickets.view_ticket'):
+    if request.user.groups.filter(name='User').exists():
+      tickets = Ticket.objects.filter(user=request.user)
+    elif request.user.groups.filter(name='Support').exists() or request.user.groups.filter(name='Manager').exists():
+      tickets = Ticket.objects.all()
+    else:
+      return HttpResponseForbidden('У вас нет разрешения на просмотр этого ресурса.')
+    return render(request, 'tickets/list.html', {'tickets': tickets})
+  else:
+    return HttpResponseForbidden('У вас нет разрешения на просмотр этого ресурса.')

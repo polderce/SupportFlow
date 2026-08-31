@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import Group
 from django.shortcuts import redirect
 from .forms import LoginForm, RegisterForm
 
@@ -13,10 +14,10 @@ def login_view(request):
          user = authenticate(request, email=email, password=password)
          if user is not None:
             login(request, user)
-            return redirect('ticket')
+            return redirect('ticket-list')
     else:
       form = LoginForm()
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'users/login.html', {'form': form})
 
 def logout_view(request):
   logout(request)
@@ -26,9 +27,10 @@ def register_view(request):
   if request.method == 'POST':
     form = RegisterForm(request.POST)
     if form.is_valid():
-        form.save()
+        user = form.save()
+        group = Group.objects.get(name='User')
+        user.groups.add(group)
         return redirect('login')
   else:
      form = RegisterForm()
-  return render(request, 'register.html', {'form': form})
-
+  return render(request, 'users/register.html', {'form': form})
