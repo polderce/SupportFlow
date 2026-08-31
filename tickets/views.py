@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from .forms import TicketCreationForm
@@ -33,3 +33,15 @@ def ticket_list_view(request):
     return render(request, 'tickets/list.html', {'tickets': tickets})
   else:
     return HttpResponseForbidden('У вас нет разрешения на просмотр этого ресурса.')
+
+@login_required
+def ticket_detail_view(request, pk):
+  if not request.user.has_perm('tickets.view_ticket'):
+    return HttpResponseForbidden('У вас нет разрешения на просмотр этого ресурса.')
+  ticket = get_object_or_404(Ticket, pk=pk)
+  if request.user.groups.filter(name='User').exists():
+    if ticket.user != request.user:
+      return HttpResponseForbidden('У вас нет разрешения на просмотр этого ресурса.')
+  elif not (request.user.groups.filter(name='Support').exists() or request.user.groups.filter(name='Manager').exists()):
+    return HttpResponseForbidden('У вас нет разрешения на просмотр этого ресурса.')
+  return render(request, 'tickets/detail.html', {'ticket': ticket})
