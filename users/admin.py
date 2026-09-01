@@ -13,7 +13,6 @@ class CustomUserAdmin(UserAdmin): # Настройка админки
       'email',
       'first_name',
       'last_name',
-      'role',
       'is_staff',
       'is_active'
   )
@@ -28,7 +27,7 @@ class CustomUserAdmin(UserAdmin): # Настройка админки
       }),
       ('Personal info', { # Кастомные поля
         'fields': (
-          'first_name', 'last_name', 'phone_number', 'photo', 'role',
+          'first_name', 'last_name', 'phone_number', 'photo',
         )
       }),
       ('Permissions', { # Права
@@ -48,7 +47,6 @@ class CustomUserAdmin(UserAdmin): # Настройка админки
               'first_name',
               'last_name',
               'phone_number',
-              'role',
               'password1',
               'password2',
               'is_staff',

@@ -14,7 +14,6 @@ class UserCreationForm(BaseUserCreationForm):
       'last_name',
       'phone_number',
       'photo',
-      'role'
     )
 
 class UserChangeForm(BaseUserChangeForm):
@@ -25,8 +24,7 @@ class UserChangeForm(BaseUserChangeForm):
       'first_name',
       'last_name',
       'phone_number',
-      'photo',
-      'role'
+      'photo'
     )
 
 class LoginForm(forms.Form):

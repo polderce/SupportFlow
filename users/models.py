@@ -24,12 +24,6 @@ class UserManager(BaseUserManager): # Клас создания пользова
 
     return self.create_user(email, password, **exstra_fields)
 
-class Role(models.TextChoices): # Создание класса с полями для выбора роли
-    USER = 'user', 'Пользователь'
-    SUPPORT = 'support', 'Саппорт'
-    MANAGER = 'manager', 'Менеджер'
-    ADMIN = 'admin', 'Администратор'
-
 class User(AbstractBaseUser, PermissionsMixin): # Класс пользователя с полями
   first_name = models.CharField(max_length=50) # CharFiled - текстовое поле для небольшого объема,
                                                            # max_length - максимальная длина, null - пустое или нет
@@ -45,7 +39,6 @@ class User(AbstractBaseUser, PermissionsMixin): # Класс пользоват�
                             blank=True,
                             null=True,
                             verbose_name='Фото') # verbose_name - удобное название для интерфейса
-  role = models.CharField(max_length=15, choices=Role.choices, default=Role.USER)
   created_at = models.DateTimeField(auto_now_add=True) # DateTimeField - поле времени, auto_now_add=True - текущее время при создании
 
   objects = UserManager()
