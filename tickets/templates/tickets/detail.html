@@ -12,5 +12,6 @@
         <li>{{ ticket.status }}</li>
         <li>{{ ticket.created_at }}</li>
     </ul>
+    <a href="{% url 'ticket-change' pk=ticket.id %}">Изменить тикет</a>
 </body>
 </html>
