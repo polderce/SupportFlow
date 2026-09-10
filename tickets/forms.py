@@ -40,19 +40,24 @@ class TicketChangeForm(ModelForm):
         self.fields['title'].widget.attrs['disabled'] = True
         self.fields['description'].widget.attrs['disabled'] = True
         self.fields['category'].widget.attrs['disabled'] = True
+        self.fields['priority'].widget.attrs['disabled'] = True
         self.fields['support'].widget.attrs['disabled'] = True
 
   def clean(self):
     cleaned_data = super().clean()
 
-    protected_fields = ['title', 'description', 'category', 'support']
+    protected_fields = ['title', 'description', 'category', 'priority', 'support']
+
     if not self.can_edit_basic_fields():
       for field_name in protected_fields:
         original_value = getattr(self.instance, field_name)
+        field_in_cleaned = field_name in cleaned_data
         user_value = cleaned_data.get(field_name)
 
-        if original_value != user_value:
+        if field_in_cleaned and user_value != original_value:
           raise ValidationError(f"Поле '{field_name}' нельзя менять. Оно защищено.")
+        else:
+          cleaned_data[field_name] = original_value
 
     return cleaned_data
 

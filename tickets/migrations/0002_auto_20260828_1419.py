@@ -7,15 +7,29 @@ def create_groups_and_assign_permissions(apps, schema_editor):
     Permission = apps.get_model('auth', 'Permission')
     ContentType = apps.get_model('contenttypes', 'ContentType')
 
-    ticket_content_type = ContentType.objects.get(
+    ticket_content_type, _ = ContentType.objects.get_or_create(
         app_label='tickets',
         model='ticket'
     )
 
-    permission_view = Permission.objects.get(content_type=ticket_content_type, codename='view_ticket')
-    permission_add = Permission.objects.get(content_type=ticket_content_type, codename='add_ticket')
-    permission_change = Permission.objects.get(content_type=ticket_content_type, codename='change_ticket')
+    permission_view, _ = Permission.objects.get_or_create(
+        content_type=ticket_content_type,
+        codename='view_ticket',
+        defaults={'name': 'Can view ticket'},
+    )
 
+    permission_add, _ = Permission.objects.get_or_create(
+        content_type=ticket_content_type,
+        codename='add_ticket',
+        defaults={'name': 'Can add ticket'},
+    )
+
+    permission_change, _ = Permission.objects.get_or_create(
+        content_type=ticket_content_type,
+        codename='change_ticket',
+        defaults={'name': 'Can change ticket'},
+    )
+    
     group_user, _ = Group.objects.get_or_create(name='User')
     group_support, _ = Group.objects.get_or_create(name='Support')
     group_manager, _ = Group.objects.get_or_create(name='Manager')
