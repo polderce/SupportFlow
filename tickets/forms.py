@@ -37,11 +37,11 @@ class TicketChangeForm(ModelForm):
     self.fields['support'].queryset = User.objects.filter(groups__name='Support')
     if user.groups.filter(name='Support').exists():
       if not self.can_edit_basic_fields():
-        self.fields['title'].widget.attrs['disabled'] = True
-        self.fields['description'].widget.attrs['disabled'] = True
-        self.fields['category'].widget.attrs['disabled'] = True
-        self.fields['priority'].widget.attrs['disabled'] = True
-        self.fields['support'].widget.attrs['disabled'] = True
+        self.fields['title'].disabled = True
+        self.fields['description'].disabled = True
+        self.fields['category'].disabled = True
+        self.fields['priority'].disabled = True
+        self.fields['support'].disabled = True
 
   def clean(self):
     cleaned_data = super().clean()
