@@ -3,8 +3,6 @@ from users.models import User
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from tickets.models import Ticket, Category, Priority, Status
-from tickets.forms import TicketCreationForm, TicketChangeForm
-
 class TicketViewTests(TestCase):
     def setUp(self):
         group_user = Group.objects.get(name='User')

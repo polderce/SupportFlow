@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
+from django.utils import timezone
 from tickets.permissions import get_visible_tickets
 from tickets.models import Ticket, Category, Priority, Status
 
@@ -32,15 +33,32 @@ def dashboard_view(request):
 
     if date_from_raw:
         try:
-            date_from = datetime.strptime(date_from_raw, '%Y-%m-%d').date()
+            date_from = datetime.strptime(
+                date_from_raw,
+                '%Y-%m-%d'
+            ).date()
+
+            date_from = timezone.make_aware(
+                datetime.combine(date_from, datetime.min.time())
+            )
+
             tickets = tickets.filter(created_at__gte=date_from)
         except ValueError:
             pass
 
     if date_to_raw:
         try:
-            date_to = datetime.strptime(date_to_raw, '%Y-%m-%d').date()
+            date_to = datetime.strptime(
+                date_to_raw,
+                '%Y-%m-%d'
+            ).date()
+
             date_to = date_to + timedelta(days=1)
+
+            date_to = timezone.make_aware(
+                datetime.combine(date_to, datetime.min.time())
+            )
+
             tickets = tickets.filter(created_at__lt=date_to)
         except ValueError:
             pass
