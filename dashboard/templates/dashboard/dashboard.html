@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Дешбоард</title>
+</head>
+<body>
+    <h1>Тикеты</h1>
+    <form method="GET" action="" id='filterForm'>
+        <label for="search">Поиск</label>
+        <input type="search" name="search" id="search" value="{{ search }}">
+
+        <label for="category">Категория</label>
+        <select name="category" id="category" onchange="document.getElementById('filterForm').submit();">
+            <option value="">Все</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if category.id|slugify == current_category %}selected{% endif %}>
+                    {{ category.title }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="priority">Приоритет</label>
+        <select name="priority" id="priority" onchange="document.getElementById('filterForm').submit();">
+            <option value="">Все</option>
+            {% for priority_v, priority_l in priorities %}
+                <option value="{{ priority_v }}" {% if priority_v == current_priority %}selected{% endif %}>
+                    {{ priority_l }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="status">Статус</label>
+        <select name="status" id="status" onchange="document.getElementById('filterForm').submit();">
+            <option value="">Все</option>
+            {% for status_v, status_l in statuses %}
+                <option value="{{ status_v }}" {% if status_v == current_status %}selected{% endif %}>
+                    {{ status_l }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="date_from">Дата от</label>
+        <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+
+        <label for="date_to">Дата до</label>
+        <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+
+        <button type="submit">Применить фильтр</button>
+        <a href="?">Сбросить</a>
+    </form>
+    <ul>
+        {% for ticket in tickets %}
+            <li>{{ ticket.title }} - {{ ticket.category }} – {{ ticket.description }} – {{ ticket.get_priority_display }} – {{ ticket.get_status_display }} – {{ ticket.created_at }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
