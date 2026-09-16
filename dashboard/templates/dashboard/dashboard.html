@@ -1,57 +1,102 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Дешбоард</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Дешбоард{% endblock %}
+{% block content %}
     <h1>Тикеты</h1>
-    <form method="GET" action="" id='filterForm'>
-        <label for="search">Поиск</label>
-        <input type="search" name="search" id="search" value="{{ search }}">
+    <form method="GET" action="" id='filterForm' class="card p-3">
+        <div class="mb-3">
+            <label for="search">Поиск</label>
+            <input class="form-control" type="search" name="search" id="search" value="{{ search }}">
+        </div>
 
-        <label for="category">Категория</label>
-        <select name="category" id="category" onchange="document.getElementById('filterForm').submit();">
-            <option value="">Все</option>
-            {% for category in categories %}
-                <option value="{{ category.id }}" {% if category.id|slugify == current_category %}selected{% endif %}>
-                    {{ category.title }}
-                </option>
-            {% endfor %}
-        </select>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="category">Категория</label>
+                <select class="form-select" name="category" id="category" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">Все</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id|slugify == current_category %}selected{% endif %}>
+                            {{ category.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <label for="priority">Приоритет</label>
-        <select name="priority" id="priority" onchange="document.getElementById('filterForm').submit();">
-            <option value="">Все</option>
-            {% for priority_v, priority_l in priorities %}
-                <option value="{{ priority_v }}" {% if priority_v == current_priority %}selected{% endif %}>
-                    {{ priority_l }}
-                </option>
-            {% endfor %}
-        </select>
+            <div class="col-md-4">
+                <label for="priority">Приоритет</label>
+                <select class="form-select" name="priority" id="priority" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">Все</option>
+                    {% for priority_v, priority_l in priorities %}
+                        <option value="{{ priority_v }}" {% if priority_v == current_priority %}selected{% endif %}>
+                            {{ priority_l }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <label for="status">Статус</label>
-        <select name="status" id="status" onchange="document.getElementById('filterForm').submit();">
-            <option value="">Все</option>
-            {% for status_v, status_l in statuses %}
-                <option value="{{ status_v }}" {% if status_v == current_status %}selected{% endif %}>
-                    {{ status_l }}
-                </option>
-            {% endfor %}
-        </select>
+            <div class="col-md-4">
+                <label for="status">Статус</label>
+                <select class="form-select" name="status" id="status" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">Все</option>
+                    {% for status_v, status_l in statuses %}
+                        <option value="{{ status_v }}" {% if status_v == current_status %}selected{% endif %}>
+                            {{ status_l }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
 
-        <label for="date_from">Дата от</label>
-        <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
-
-        <label for="date_to">Дата до</label>
-        <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
-
-        <button type="submit">Применить фильтр</button>
-        <a href="?">Сбросить</a>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label for="date_from">Дата от</label>
+                <input  class="form-control" type="date" id="date_from" name="date_from" value="{{ date_from }}">
+            </div>
+            <div class="col-md-4">
+                <label for="date_to">Дата до</label>
+                <input class="form-control" type="date" id="date_to" name="date_to" value="{{ date_to }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button class="btn btn-primary flex-fill" type="submit">Применить фильтр</button>
+                <a class="btn btn-outline-secondary flex-fill" href="?">Сбросить</a>
+            </div>
+        </div>
     </form>
-    <ul>
-        {% for ticket in tickets %}
-            <li>{{ ticket.title }} - {{ ticket.category }} – {{ ticket.description }} – {{ ticket.get_priority_display }} – {{ ticket.get_status_display }} – {{ ticket.created_at }}</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+    <div class="table-responsive mt-4 rounded border overflow-hidden">
+        <table class="table table-hover table-striped table-borderless align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-center border-bottom">№</th>
+                    <th class=" border-bottom">Тикет</th>
+                    <th class=" border-bottom">Категория</th>
+                    <th class="text-center border-bottom">Приоритет</th>
+                    <th class="text-center border-bottom">Статус</th>
+                    <th class="text-center border-bottom">Создан</th>
+                    <th class="text-center border-bottom">Обновлён</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for ticket in tickets %}
+                    <tr>
+                        <td class="text-center">{{ ticket.pk }}</td>
+                        <td><a href="{% url "ticket-detail" pk=ticket.pk %}">{{ ticket.title }}</a></td>
+                        <td>{{ ticket.category }}</td>
+                        <td class="text-center">
+                            <span class="badge text-bg-secondary">
+                                {{ ticket.get_priority_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge text-bg-secondary">
+                                {{ ticket.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-center">{{ ticket.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="text-center">{{ ticket.updated_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,17 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Просмотр тикета</title>
-</head>
-<body>
-    <h1>Тикет №{{ ticket.id }}</h1>
-    <ul>
-        <li>{{ ticket.title }}</li>
-        <li>{{ ticket.category }}</li>
-        <li>{{ ticket.description }}</li>
-        <li>{{ ticket.status }}</li>
-        <li>{{ ticket.created_at }}</li>
-    </ul>
-    <a href="{% url 'ticket-change' pk=ticket.id %}">Изменить тикет</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Тикет №{{ ticket.pk }}{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="d-flex justify-content-center">Тикет №{{ ticket.pk }}</h1>
+                    <h5>{{ ticket.title }}</h5>
+                    <div class="fw-bold">
+                        <p class="text-body">Категория: {{ ticket.category }}</p>
+                    </div>
+                    <p class="text-body mt-2">{{ ticket.description }}</p>
+                    <div class="mt-3">
+                        <p class="mb-1">Статус: {{ ticket.get_status_display }}</p>
+                        <p class="mb-1">Приоритет: {{ ticket.get_priority_display }}</p>
+                    </div>
+
+                    <p class="text-body-secondary mt-3">Создан: {{ ticket.created_at }}</p>
+                    <div class="text-center">
+                        <a href="{% url 'ticket-change' pk=ticket.pk %}" class="btn btn-primary">Изменить тикет</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

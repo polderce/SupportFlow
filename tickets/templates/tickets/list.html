@@ -1,14 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Просмотр тикетов</title>
-</head>
-<body>
-    <h1>Тикеты</h1>
-    <ul>
+{% extends "base.html" %}
+
+{% block title %}Тикеты{% endblock %}
+{% block content %}
+    <ul class="list-group">
         {% for ticket in tickets %}
-        <li>{{ ticket.title }} - {{ ticket.description }}</li>
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="ms-2 me-auto">
+                <a href="{% url "ticket-detail" pk=ticket.pk %}">
+                    <h5>№{{ticket.pk}}. {{ ticket.title }}</h5>
+                </a>
+                <div class="fw-bold">
+                    <p class="text-body">Категория: {{ ticket.category }}</p>
+                </div>
+                <p class="text-truncate mt-2 " style="max-width: 900px;">{{ ticket.description }}</p>
+            </div>
+            <span class="text-body-secondary">{{ ticket.created_at}}</span>
+        </li>
         {% endfor %}
     </ul>
-</body>
-</html>
+{% endblock %}

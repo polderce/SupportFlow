@@ -12,6 +12,16 @@ class TicketCreationForm(ModelForm):
       'description',
     )
 
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    for field_name in self.fields:
+      self.fields[field_name].widget.attrs.update({'class':'form-control'})
+
+    self.fields['title'].label = 'Заголовок'
+    self.fields['category'].label = 'Категория'
+    self.fields['description'].label = 'Описание'
+
+    self.fields['category'].empty_label = 'Выберите из списка'
 class TicketChangeForm(ModelForm):
   class Meta:
     model = Ticket
@@ -42,6 +52,18 @@ class TicketChangeForm(ModelForm):
         self.fields['category'].disabled = True
         self.fields['priority'].disabled = True
         self.fields['support'].disabled = True
+
+    for field_name in self.fields:
+      self.fields[field_name].widget.attrs.update({'class':'form-control'})
+
+    self.fields['title'].label = 'Заголовок'
+    self.fields['category'].label = 'Категория'
+    self.fields['description'].label = 'Описание'
+    self.fields['priority'].label = 'Приоритет'
+    self.fields['status'].label = 'Статус'
+    self.fields['support'].label = 'Support'
+
+    self.fields['support'].empty_label = 'Выберите из списка'
 
   def clean(self):
     cleaned_data = super().clean()

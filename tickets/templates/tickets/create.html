@@ -1,14 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Создание тикета</title>
-</head>
-<body>
-    <h2>Заполните форму своими данными:</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Сохранить</button>
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Создание тикета{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="d-flex justify-content-center">Создание тикета</h1>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Создать</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

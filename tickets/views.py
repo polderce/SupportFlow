@@ -25,7 +25,7 @@ def ticket_create_view(request):
 def ticket_list_view(request):
   if not request.user.has_perm('tickets.view_ticket'):
     return HttpResponseForbidden('У вас нет разрешения на просмотр этого ресурса.')
-  tickets = get_visible_tickets(request.user)
+  tickets = get_visible_tickets(request.user).order_by('-created_at')
   return render(request, 'tickets/list.html', {'tickets': tickets})
 
 @login_required
