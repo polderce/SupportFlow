@@ -4,6 +4,7 @@ from django.contrib.auth.forms import (
 )
 from django import forms
 from .models import User
+from .utils import normalize_russian_phone
 
 class UserCreationForm(BaseUserCreationForm):
   class Meta:
@@ -16,6 +17,11 @@ class UserCreationForm(BaseUserCreationForm):
       'photo',
     )
 
+  def clean_phone_number(self):
+      return normalize_russian_phone(
+          self.cleaned_data['phone_number']
+      )
+
 class UserChangeForm(BaseUserChangeForm):
   class Meta:
     model = User
@@ -26,6 +32,31 @@ class UserChangeForm(BaseUserChangeForm):
       'phone_number',
       'photo'
     )
+
+class ProfileChangeForm(forms.ModelForm):
+  class Meta:
+    model = User
+    fields = (
+      'first_name',
+      'last_name',
+      'phone_number',
+      'photo'
+    )
+
+  def clean_phone_number(self):
+      return normalize_russian_phone(
+          self.cleaned_data['phone_number']
+      )
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    for field_name in self.fields:
+      self.fields[field_name].widget.attrs.update({'class':'form-control'})
+
+    self.fields['first_name'].label = 'Имя'
+    self.fields['last_name'].label = 'Фамилия'
+    self.fields['phone_number'].label = 'Номер телефона'
+    self.fields['photo'].label = 'Фото'
 
 class LoginForm(forms.Form):
   email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'ivanov@example.com'}))
@@ -47,6 +78,11 @@ class RegisterForm(UserCreationForm):
       'password1',
       'password2'
     )
+
+  def clean_phone_number(self):
+      return normalize_russian_phone(
+          self.cleaned_data['phone_number']
+      )
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)

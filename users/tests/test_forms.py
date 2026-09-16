@@ -9,7 +9,7 @@ class UsersFormTests(TestCase):
             'email':'user1@test.com',
             'first_name':'User1',
             'last_name':'Test',
-            'phone_number':'89009009090',
+            'phone_number':'+79009009090',
             'password1':'SupportFlow_Test_8472',
             'password2': 'SupportFlow_Test_8472'
         }
@@ -23,7 +23,7 @@ class UsersFormTests(TestCase):
         self.user = User.objects.create_user(
             email='user1@example.com',
             password='password123',
-            phone_number='79990000001'
+            phone_number='+79990000001'
         )
         self.user.groups.add(group_user)
 
@@ -48,7 +48,7 @@ class UsersFormTests(TestCase):
 
     def test_register_form_duplicate_phone(self):
         data = self.register_valid_data.copy()
-        data['phone_number'] = '79990000001'
+        data['phone_number'] = '+79990000001'
         form = RegisterForm(data=data)
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors.as_data()['phone_number'][0].code, 'unique')

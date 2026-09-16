@@ -1,1 +1,189 @@
+{% extends "base.html" %}
 
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Статистика</h1>
+    <div class="container py-2">
+        <h3 class="mb-3">Общая статистика</h3>
+        <div class="row g-4">
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Всего тикетов – {{ total }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Статус "Новый" – {{ new }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Статус "В работе" – {{ in_progress }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Статус "Решен" – {{ resolved }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Статус "Закрыт" – {{ closed }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Приоритет "Низкий" – {{ low }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Приоритет "Средний" – {{ medium }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Приоритет "Высокий" – {{ high }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Приоритет "Критический" – {{ critical }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Назначенные – {{ assigned }}
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="p-3 border rounded bg-light h-100">
+                    Не назначенные – {{ unassigned }}
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mt-5 mb-3">Категории</h3>
+        <div class="card border">
+            <div class="card-body">
+                <h5 class="card-title">Топ 5 категорий</h5>
+                <ol class="mb-0">
+                    {% for category_name, data in category_stats.items %}
+                        <li class="mb-2">
+                            <strong>{{ category_name }}</strong>
+                            <span class="text-body-secondary">
+                                — {{ data.count }} шт. ({{ data.percentage }}%)
+                            </span>
+                        </li>
+                    {% empty %}
+                        <li>Нет данных по категориям</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+
+        <h3 class="mt-5 mb-3">Нагрузка по тикетам</h3>
+        <div class="card border">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <div>
+                        <h5 class="card-title mb-1">Количество созданных тикетов</h5>
+                        {% if period == 'today' %}
+                            <span class="text-body-secondary">
+                                За сегодня
+                            </span>
+                        {% elif period == '7d' %}
+                            <span class="text-body-secondary">
+                                За последние 7 дней
+                            </span>
+                        {% elif period == '30d' %}
+                            <span class="text-body-secondary">
+                                За последние 30 дней
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="btn-group" role="group" aria-label="Период графика">
+                        <a
+                            href="?period=today"
+                            class="btn {% if period == 'today' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                        >
+                            Сегодня
+                        </a>
+                        <a
+                            href="?period=7d"
+                            class="btn {% if period == '7d' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                        >
+                            7 дней
+                        </a>
+                        <a
+                            href="?period=30d"
+                            class="btn {% if period == '30d' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+                        >
+                            30 дней
+                        </a>
+                    </div>
+                </div>
+
+                {{ chart_data|json_script:"chart-data" }}
+
+                <div style="height: 600px;">
+                    <canvas id="ticketsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chartData = JSON.parse(
+            document.getElementById('chart-data').textContent
+        );
+
+        const labels = Object.keys(chartData);
+        const values = Object.values(chartData);
+
+        const period = '{{ period }}';
+
+        const ctx = document.getElementById('ticketsChart');
+
+        new Chart(ctx, {
+            type: 'bar',
+
+            data: {
+                labels: labels,
+
+                datasets: [{
+                    label: 'Количество тикетов',
+                    data: values,
+                    borderWidth: 1
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        title: {
+                            display: true,
+                            text: 'Количество тикетов'
+                        }
+                    },
+
+                    x: {
+                        title: {
+                            display: true,
+                            text: period === 'today' ? 'Время' : 'Дата'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
