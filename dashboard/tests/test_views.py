@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.utils import timezone
 from datetime import datetime
+from unittest.mock import patch
 
 from users.models import User
 from tickets.models import Ticket, Category, Priority, Status
@@ -267,4 +268,184 @@ class DashboardViewTests(TestCase):
             response.context['tickets'],
             [self.support3_ticket, self.other2_ticket, self.other1_ticket, self.ticket],
             ordered=True
+        )
+
+    def test_statistics_requires_authentication(self):
+        response = self.client.get(reverse('statistics'))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('statistics')}")
+
+    def test_statistics_forbidden_for_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('statistics'))
+        self.assertContains(
+            response,
+            'У вас нет разрешения на просмотр этого ресурса.',
+            status_code=403
+        )
+
+    def test_statistics_allows_support(self):
+        self.client.force_login(self.support)
+        response = self.client.get(reverse('statistics'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'dashboard/statistics.html')
+
+    def test_statistics_returns_global_ticket_counts(self):
+        self.client.force_login(self.support)
+        response = self.client.get(reverse('statistics'))
+        self.assertEqual(response.status_code, 200)
+        actual = {
+            'total': response.context['total'],
+            'new': response.context['new'],
+            'in_progress': response.context['in_progress'],
+            'resolved': response.context['resolved'],
+            'closed': response.context['closed'],
+            'low': response.context['low'],
+            'medium': response.context['medium'],
+            'high': response.context['high'],
+            'critical': response.context['critical'],
+            'assigned': response.context['assigned'],
+            'unassigned': response.context['unassigned'],
+        }
+        self.assertEqual(
+            actual,
+            {
+                'total': 6,
+                'new': 1,
+                'in_progress': 3,
+                'resolved': 0,
+                'closed': 2,
+                'low': 2,
+                'medium': 1,
+                'high': 3,
+                'critical': 0,
+                'assigned': 2,
+                'unassigned': 4,
+            }
+        )
+
+    def test_statistics_returns_category_stats(self):
+        self.client.force_login(self.support)
+        response = self.client.get(reverse('statistics'))
+        self.assertEqual(response.status_code, 200)
+        actual = response.context['category_stats']
+        self.assertEqual(
+            actual,
+            {
+                'Technical': {
+                    'count': 3,
+                    'percentage': 50.0,
+                },
+                'Billing': {
+                    'count': 3,
+                    'percentage': 50.0,
+                },
+            }
+        )
+
+    def test_statistics_invalid_period_defaults_to_today(self):
+        self.client.force_login(self.support)
+        response = self.client.get(reverse('statistics'), {'period': 'invalid'})
+        self.assertEqual(response.status_code, 200)
+        actual = response.context['period']
+        self.assertEqual(actual, 'today')
+
+    @patch('dashboard.views.timezone.localtime')
+    def test_statistics_chart_data_for_7_days(self, mock_localtime):
+        self.client.force_login(self.support)
+        mock_localtime.return_value = timezone.make_aware(datetime(2026, 9, 15, 15))
+        response = self.client.get(reverse('statistics'), {'period': '7d'})
+        self.assertEqual(response.status_code, 200)
+        chart_data = response.context['chart_data']
+        self.assertEqual(
+            chart_data,
+            {
+                '09.09': 1,
+                '10.09': 2,
+                '11.09': 1,
+                '12.09': 1,
+                '13.09': 0,
+                '14.09': 0,
+                '15.09': 0,
+            }
+        )
+
+    @patch('dashboard.views.timezone.localtime')
+    def test_statistics_chart_data_for_30_days(self, mock_localtime):
+        self.client.force_login(self.support)
+        mock_localtime.return_value = timezone.make_aware(datetime(2026, 9, 15, 15))
+        response = self.client.get(reverse('statistics'), {'period': '30d'})
+        self.assertEqual(response.status_code, 200)
+        chart_data = response.context['chart_data']
+        self.assertEqual(
+            chart_data,
+            {
+                '17.08': 0,
+                '18.08': 0,
+                '19.08': 0,
+                '20.08': 0,
+                '21.08': 0,
+                '22.08': 0,
+                '23.08': 0,
+                '24.08': 0,
+                '25.08': 0,
+                '26.08': 0,
+                '27.08': 0,
+                '28.08': 0,
+                '29.08': 0,
+                '30.08': 0,
+                '31.08': 0,
+                '01.09': 0,
+                '02.09': 0,
+                '03.09': 0,
+                '04.09': 0,
+                '05.09': 1,
+                '06.09': 0,
+                '07.09': 0,
+                '08.09': 0,
+                '09.09': 1,
+                '10.09': 2,
+                '11.09': 1,
+                '12.09': 1,
+                '13.09': 0,
+                '14.09': 0,
+                '15.09': 0,
+            }
+        )
+
+    @patch('dashboard.views.timezone.localtime')
+    def test_statistics_chart_data_for_today(self, mock_localtime):
+        self.client.force_login(self.support)
+        mock_localtime.return_value = timezone.make_aware(datetime(2026, 9, 15, 15))
+        response = self.client.get(reverse('statistics'), {'period': 'today'})
+        self.assertEqual(response.status_code, 200)
+        chart_data = response.context['chart_data']
+        self.assertEqual(
+            chart_data,
+            {
+                '00:00': 0,
+                '01:00': 0,
+                '02:00': 0,
+                '03:00': 0,
+                '04:00': 0,
+                '05:00': 0,
+                '06:00': 0,
+                '07:00': 0,
+                '08:00': 0,
+                '09:00': 0,
+                '10:00': 0,
+                '11:00': 0,
+                '12:00': 0,
+                '13:00': 0,
+                '14:00': 0,
+                '15:00': 0,
+                '16:00': 0,
+                '17:00': 0,
+                '18:00': 0,
+                '19:00': 0,
+                '20:00': 0,
+                '21:00': 0,
+                '22:00': 0,
+                '23:00': 0,
+            }
         )

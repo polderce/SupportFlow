@@ -1,7 +1,8 @@
 from django.test import TestCase
 from users.models import User
 from django.contrib.auth.models import Group
-from users.forms import RegisterForm, LoginForm
+from users.forms import RegisterForm, LoginForm, ProfileChangeForm
+from django.core.exceptions import ValidationError
 
 class UsersFormTests(TestCase):
     def setUp(self):
@@ -19,6 +20,12 @@ class UsersFormTests(TestCase):
             'password':'SupportFlow_Test_8472',
         }
 
+        self.change_valid_data = {
+            'first_name':'Иван',
+            'last_name':'Иванов',
+            'phone_number':'89032321221'
+        }
+
         group_user = Group.objects.get(name='User')
         self.user = User.objects.create_user(
             email='user1@example.com',
@@ -26,6 +33,13 @@ class UsersFormTests(TestCase):
             phone_number='+79990000001'
         )
         self.user.groups.add(group_user)
+
+        self.user2 = User.objects.create_user(
+            email='user2@example.com',
+            password='password123',
+            phone_number='+79990000002'
+        )
+        self.user2.groups.add(group_user)
 
     def test_register_form_valid(self):
         form = RegisterForm(data=self.register_valid_data)
@@ -45,7 +59,6 @@ class UsersFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors.as_data()['email'][0].code, 'unique')
 
-
     def test_register_form_duplicate_phone(self):
         data = self.register_valid_data.copy()
         data['phone_number'] = '+79990000001'
@@ -61,3 +74,23 @@ class UsersFormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors.as_data()['email'][0].code, 'required')
         self.assertEqual(form.errors.as_data()['password'][0].code, 'required')
+
+    def test_profile_change_form_valid(self):
+        form = ProfileChangeForm(data=self.change_valid_data, instance=self.user)
+        self.assertTrue(form.is_valid())
+        cleaned_data = form.cleaned_data['phone_number']
+        self.assertEqual(cleaned_data, '+79032321221')
+
+    def test_profile_change_form_invalid_phone(self):
+        data = self.change_valid_data.copy()
+        data['phone_number']='98123848884'
+        form = ProfileChangeForm(data=data, instance=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIsInstance(form.errors.as_data()['phone_number'][0], ValidationError)
+
+    def test_profile_change_form_duplicate_phone(self):
+        data = self.change_valid_data.copy()
+        data['phone_number']='+79990000002'
+        form = ProfileChangeForm(data=data, instance=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIsInstance(form.errors.as_data()['phone_number'][0], ValidationError)

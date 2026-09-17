@@ -61,6 +61,14 @@ class PermissionTests(TestCase):
         )
         self.user_with_manager.groups.add(group_manager)
 
+        self.superuser = User.objects.create_superuser(
+            email='admin@example.com',
+            password='secret_admin_password',
+            first_name='Главный',
+            last_name='Админ',
+            phone_number='79990000006'
+        )
+
         # Создаём тикет от 1-го user'а
         self.ticket1 = Ticket.objects.create(
             title='Test title',
@@ -151,3 +159,7 @@ class PermissionTests(TestCase):
         result_manager = can_change_ticket(self.user_with_manager, self.ticket1)
         self.assertTrue(result_manager)
 
+    def test_superuser_permissions(self):
+        visible_tickets = get_visible_tickets(self.superuser)
+        self.assertQuerySetEqual(visible_tickets, [self.ticket1, self.ticket2, self.ticket_with_support1, self.ticket_with_support2, self.ticket_with_support3, self.ticket_with_support4, self.ticket_with_support5], ordered=False)
+        self.assertTrue(can_change_ticket(self.superuser, self.ticket1))

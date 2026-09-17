@@ -12,21 +12,21 @@ class TicketViewTests(TestCase):
         self.user = User.objects.create_user(
             email='user1@example.com',
             password='password123',
-            phone_number='79990000001'
+            phone_number='+79990000001'
         )
         self.user.groups.add(group_user)
 
         self.support = User.objects.create_user(
             email='user2@example.com',
             password='password123',
-            phone_number='79990000002'
+            phone_number='+79990000002'
         )
         self.support.groups.add(group_support)
 
         self.manager = User.objects.create_user(
             email='user3@example.com',
             password='password123',
-            phone_number='79990000003'
+            phone_number='+79990000003'
         )
         self.manager.groups.add(group_manager)
 
@@ -80,6 +80,16 @@ class TicketViewTests(TestCase):
             support=None
         )
 
+        self.ticket5 = Ticket.objects.create(
+            title='Test title',
+            category=self.category,
+            description='Test description',
+            user=self.user,
+            priority=self.priority,
+            status=self.status2,
+            support=self.support
+        )
+
         self.change_valid_data = {
             'title':'Test new title',
             'category':self.category.pk,
@@ -125,7 +135,7 @@ class TicketViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertQuerySetEqual(
             response.context['tickets'],
-            [self.ticket, self.ticket2, self.ticket3, self.ticket4],
+            [self.ticket, self.ticket2, self.ticket3, self.ticket4, self.ticket5],
             ordered=False
         )
 
@@ -183,3 +193,23 @@ class TicketViewTests(TestCase):
         ticket = Ticket.objects.get(pk=self.ticket2.pk)
         self.assertEqual(ticket.title, 'Test title')
         self.assertIn('title', response.context['form'].errors)
+
+    def test_user_cannot_change_own_ticket(self):
+        self.client.force_login(self.user)
+        data = self.change_valid_data.copy()
+        data['title']='Title 10'
+        response = self.client.post(reverse('ticket-change', kwargs={'pk':self.ticket.pk}), data=data)
+        self.assertEqual(response.status_code, 403)
+        ticket = Ticket.objects.get(pk=self.ticket.pk)
+        self.assertEqual(ticket.title, 'Test title')
+
+    def test_support_cannot_change_resolved_ticket(self):
+        self.client.force_login(self.support)
+        data = self.change_valid_data.copy()
+        data['title']='Title 10'
+        response = self.client.post(reverse('ticket-change', kwargs={'pk':self.ticket5.pk}), data=data)
+        self.assertEqual(response.status_code, 302)
+        ticket = Ticket.objects.get(pk=self.ticket5.pk)
+        self.assertEqual(ticket.title, 'Test title')
+
+
