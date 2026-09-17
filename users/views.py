@@ -62,7 +62,7 @@ def profile_change_view(request, pk):
     form = ProfileChangeForm(request.POST, request.FILES, instance=target_user)
     if form.is_valid():
        form.save()
-       return redirect('profile')
+       return redirect('profile', pk=pk)
   else:
     form = ProfileChangeForm(instance=target_user)
   return render(request, 'users/profile_change.html', {'profile_user':target_user, 'form':form})
