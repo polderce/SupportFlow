@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from .models import Ticket, Status
+from .models import Ticket
 from users.models import User
+from .permissions import can_edit_basic_fields
 
 class TicketCreationForm(ModelForm):
   class Meta:
@@ -34,19 +35,12 @@ class TicketChangeForm(ModelForm):
       'support'
     )
 
-  def can_edit_basic_fields(self):
-    if self.user.groups.filter(name='Manager').exists():
-      return True
-    return self.instance.support == self.user and (self.instance.status != Status.RESOLVED and self.instance.status != Status.CLOSED)
-
-
-
   def __init__(self, *args, user, **kwargs):
     self.user = user
     super().__init__(*args, **kwargs)
     self.fields['support'].queryset = User.objects.filter(groups__name='Support')
     if user.groups.filter(name='Support').exists():
-      if not self.can_edit_basic_fields():
+      if not can_edit_basic_fields(self.user, self.instance):
         self.fields['title'].disabled = True
         self.fields['description'].disabled = True
         self.fields['category'].disabled = True
@@ -70,7 +64,7 @@ class TicketChangeForm(ModelForm):
 
     protected_fields = ['title', 'description', 'category', 'priority', 'support']
 
-    if not self.can_edit_basic_fields():
+    if not can_edit_basic_fields(self.user, self.instance):
       for field_name in protected_fields:
         original_value = getattr(self.instance, field_name)
         field_in_cleaned = field_name in cleaned_data

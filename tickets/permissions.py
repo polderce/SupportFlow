@@ -1,6 +1,7 @@
 from django.db.models import QuerySet, Q
-
-from .models import Ticket
+from rest_framework import viewsets
+from rest_framework.permissions import BasePermission
+from .models import Ticket, Status
 
 
 def get_visible_tickets(user) -> QuerySet[Ticket]:
@@ -29,3 +30,15 @@ def can_change_ticket(user, ticket):
             return True
 
     return False
+
+def can_edit_basic_fields(user, instance):
+    if user.groups.filter(name='Manager').exists() or user.is_superuser:
+      return True
+    return instance.support == user and (instance.status != Status.RESOLVED and instance.status != Status.CLOSED)
+
+class CanChangeTicketPermission(BasePermission):
+    def has_object_permission(self, request, view, obj):
+
+        return can_change_ticket(request.user, obj)
+
+

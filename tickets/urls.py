@@ -5,5 +5,5 @@ urlpatterns = [
     path('tickets/create/', ticket_create_view, name='ticket-create'),
     path('tickets/', ticket_list_view, name='ticket-list'),
     path('tickets/<int:pk>/', ticket_detail_view, name='ticket-detail'),
-    path('tickets/<int:pk>/change/', ticket_change_view, name='ticket-change')
+    path('tickets/<int:pk>/change/', ticket_change_view, name='ticket-change'),
 ]
